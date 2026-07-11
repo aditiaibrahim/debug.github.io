@@ -120,12 +120,38 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin-right: 10px;
         }
 
         .logout-btn:hover {
             background: #c82333;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .switch-account-btn {
+            padding: 10px 24px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-account-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .login-form {
@@ -176,7 +202,10 @@
             <img class="user-avatar" id="userAvatar" src="" alt="User Avatar">
             <div class="user-name" id="userName"></div>
             <div class="user-email" id="userEmail"></div>
-            <button class="logout-btn" id="logoutBtn">Keluar</button>
+            <div class="button-group">
+                <button class="switch-account-btn" id="switchAccountBtn">Ganti Akun</button>
+                <button class="logout-btn" id="logoutBtn">Keluar</button>
+            </div>
         </div>
     </div>
 
@@ -195,6 +224,7 @@
         const userInfo = document.getElementById('userInfo');
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const switchAccountBtn = document.getElementById('switchAccountBtn');
         const errorMessage = document.getElementById('errorMessage');
         const userAvatar = document.getElementById('userAvatar');
         const userName = document.getElementById('userName');
@@ -217,7 +247,8 @@
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin
+                        redirectTo: window.location.origin,
+                        prompt: 'select_account'  // Always show account chooser
                     }
                 });
 
@@ -238,15 +269,41 @@
         // Logout
         logoutBtn.addEventListener('click', async () => {
             try {
+                console.log('Melakukan logout...');
                 const { error } = await supabaseClient.auth.signOut();
                 
                 if (error) {
-                    showError(error.message);
+                    console.error('Error logout:', error);
+                    showError('Error: ' + error.message);
                 } else {
+                    console.log('Logout berhasil');
                     showLoginForm();
                 }
             } catch (error) {
+                console.error('Exception saat logout:', error);
                 showError('Terjadi kesalahan saat logout. Silakan coba lagi.');
+            }
+        });
+
+        // Switch Account (just logout)
+        switchAccountBtn.addEventListener('click', async () => {
+            try {
+                console.log('Ganti akun: logout...');
+                
+                // Just logout, user can login again with different account
+                const { error } = await supabaseClient.auth.signOut();
+                
+                if (error) {
+                    console.error('Error logout:', error);
+                    showError('Error: ' + error.message);
+                } else {
+                    console.log('Logout berhasil, silakan login dengan akun lain');
+                    showLoginForm();
+                }
+                
+            } catch (error) {
+                console.error('Exception saat ganti akun:', error);
+                showError('Terjadi kesalahan. Silakan coba lagi.');
             }
         });
 
